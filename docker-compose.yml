@@ -1,0 +1,51 @@
+services:
+  core:
+    image: ${JABFY_CORE_IMAGE:?Set JABFY_CORE_IMAGE in deployment.env}
+    environment:
+      JABFY_HOST: 0.0.0.0
+      JABFY_PORT: 8000
+      OLLAMA_HOST: ${OLLAMA_HOST:?Set OLLAMA_HOST in deployment.env}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+
+  bus:
+    image: ${JABFY_BUS_IMAGE:?Set JABFY_BUS_IMAGE in deployment.env}
+    environment:
+      JABFY_BUS_HOST: 0.0.0.0
+      JABFY_BUS_PORT: 8080
+    ports:
+      - "8081:8080"
+    restart: unless-stopped
+
+  website-backend:
+    image: ${JABFY_WEBSITE_BACKEND_IMAGE:?Set JABFY_WEBSITE_BACKEND_IMAGE in deployment.env}
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+      FRONTEND_URL: ${JABFY_FRONTEND_URL:?Set JABFY_FRONTEND_URL in deployment.env}
+    ports:
+      - "3001:3001"
+    restart: unless-stopped
+
+  website-frontend:
+    image: ${JABFY_WEBSITE_FRONTEND_IMAGE:?Set JABFY_WEBSITE_FRONTEND_IMAGE in deployment.env}
+    depends_on:
+      - website-backend
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+
+  voice:
+    profiles: ["voice"]
+    image: ${JABFY_VOICE_IMAGE:?Set JABFY_VOICE_IMAGE in deployment.env}
+    environment:
+      JABFY_VOICE_ENABLE_AUDIO: "false"
+      OLLAMA_HOST: ${OLLAMA_HOST:?Set OLLAMA_HOST in deployment.env}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "5000:5000"
+    restart: unless-stopped

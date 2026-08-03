@@ -1,0 +1,92 @@
+name: Update deployment image digest
+
+on:
+  repository_dispatch:
+    types: [image-published]
+  workflow_dispatch:
+    inputs:
+      image:
+        description: Image to update
+        required: true
+        type: choice
+        options:
+          - core
+          - bus
+          - voice
+          - website-frontend
+          - website-backend
+      digest:
+        description: Immutable image digest (sha256:<64 lowercase hexadecimal characters>)
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update-image:
+    runs-on: ubuntu-latest
+    env:
+      IMAGE: ${{ inputs.image || github.event.client_payload.image }}
+      DIGEST: ${{ inputs.digest || github.event.client_payload.digest }}
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+
+      - name: Update the selected digest
+        id: update
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          case "$IMAGE" in
+            core)
+              key=JABFY_CORE_IMAGE
+              repository=ghcr.io/jabfy-corp/jabfy-core
+              ;;
+            bus)
+              key=JABFY_BUS_IMAGE
+              repository=ghcr.io/jabfy-corp/jabfy-bus
+              ;;
+            voice)
+              key=JABFY_VOICE_IMAGE
+              repository=ghcr.io/jabfy-corp/jabfy-voice
+              ;;
+            website-frontend)
+              key=JABFY_WEBSITE_FRONTEND_IMAGE
+              repository=ghcr.io/jabfy-corp/jabfy-website-frontend
+              ;;
+            website-backend)
+              key=JABFY_WEBSITE_BACKEND_IMAGE
+              repository=ghcr.io/jabfy-corp/jabfy-website-backend
+              ;;
+            *)
+              echo "Unsupported image: $IMAGE" >&2
+              exit 1
+              ;;
+          esac
+
+          if [[ ! "$DIGEST" =~ ^sha256:[a-f0-9]{64}$ ]]; then
+            echo "Expected an immutable lowercase SHA-256 digest." >&2
+            exit 1
+          fi
+
+          sed -i "s|^$key=.*|$key=$repository@$DIGEST|" deployment.env
+          echo "image=$IMAGE" >> "$GITHUB_OUTPUT"
+
+      - name: Create deployment update pull request
+        uses: peter-evans/create-pull-request@22a9089034f40e5a961c8808d113e2c98fb63676
+        with:
+          token: ${{ secrets.JABFY_DEPLOY_PR_TOKEN || github.token }}
+          commit-message: "chore: update ${{ steps.update.outputs.image }} image digest"
+          branch: deploy-${{ github.run_id }}-${{ steps.update.outputs.image }}-image-digest
+          delete-branch: true
+          title: "chore: update ${{ steps.update.outputs.image }} image digest"
+          body: |
+            Automated immutable-image update.
+
+            Source: ${{ github.event.client_payload.source_sha || github.sha }}
+            Image: ${{ steps.update.outputs.image }}
+            Digest: ${{ env.DIGEST }}
