@@ -1,10 +1,50 @@
 # Jabfy Deploy
 
-Central deployment configuration for the Jabfy services published to GitHub
-Container Registry. This repository never builds application source code; it
-deploys immutable image digests produced by the service repositories.
+Point d'entrée unique pour assembler, démarrer et arrêter Jabfy. Les dépôts
+applicatifs fournissent leurs images et bibliothèques ; Deploy possède la topologie,
+les connexions, les volumes et les contrôles de santé.
 
-## Setup
+## V0.0.1 locale — démarrage recommandé
+
+Placer `jabfy-deploy`, `jabfy-core`, `jabfy-bus`, `jabfy-guard` et `jabfy-simulation`
+côte à côte avec les changements V0.0.1. Ouvrir Docker Desktop, puis, depuis ce dépôt :
+
+```bash
+python3 scripts/start.py --check  # vérifie la configuration, sans démarrer
+python3 scripts/start.py          # construit, démarre et télécharge le modèle
+```
+
+Ouvrir **http://127.0.0.1:8080**. `--no-ai` évite le téléchargement du modèle ; les
+contrôles manuels restent disponibles. Python 3 est nécessaire pour le lanceur.
+
+```bash
+docker compose -f compose.local.yml ps
+docker compose -f compose.local.yml logs --tail=100
+docker compose -f compose.local.yml down # conserve les données, ne pas ajouter -v
+```
+
+Sans lanceur : `docker compose -f compose.local.yml up --build -d --wait`, puis
+`docker compose -f compose.local.yml exec ollama ollama pull qwen2.5:1.5b` pour l'IA.
+
+Cette configuration construit les sources locales tant que les images intégrées
+ne sont pas publiées. Elle lance Simulation, Core, Ollama et MQTT. **Guard est une
+bibliothèque et Bus reste embarqué dans le runtime Simulation** : pas de faux
+services indépendants. Seuls les appareils virtuels sont pilotés.
+
+Le nom technique du projet Compose reste `jabfy-simulation` pour conserver les
+conteneurs/volumes existants. Le plan et l'audit restent dans `../jabfy-simulation/data`.
+Ne pas lancer l'ancienne stack en parallèle. Plus de détails : [guide V0.0.1](docs/v0.0.1.md).
+
+Tests de l'orchestration : `python3 -m pytest -q tests` (installer `pytest` et `PyYAML`).
+
+## Déploiement par images publiées — configuration historique
+
+Le fichier `docker-compose.yml` conserve la configuration GHCR historique, séparée
+de `compose.local.yml`. Ses digests dans `deployment.env` sont encore des placeholders :
+ce n'est pas le lancement de la V0.0.1 et il ne faut pas démarrer les deux stacks ensemble.
+Le chemin par images immuables reste prévu pour la distribution, sans build local.
+
+### Setup
 
 1. Replace every placeholder in the versioned `deployment.env` lock file with
    the digest shown by a successful source
