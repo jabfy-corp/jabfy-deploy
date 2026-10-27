@@ -4,6 +4,9 @@ Point d'entrée unique pour assembler, démarrer et arrêter Jabfy. Les dépôts
 applicatifs fournissent leurs images et bibliothèques ; Deploy possède la topologie,
 les connexions, les volumes et les contrôles de santé.
 
+Documentation du composant : [docs/README.md](docs/README.md). Ces pages sont la
+source destinée à la section Composants de `jabfy-docs`, après fusion sur `main`.
+
 ## V0.0.1 locale — démarrage recommandé
 
 Placer `jabfy-deploy`, `jabfy-core`, `jabfy-bus`, `jabfy-guard` et `jabfy-simulation`
