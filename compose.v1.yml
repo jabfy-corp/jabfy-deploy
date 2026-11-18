@@ -1,0 +1,16 @@
+# Overlay for the V1 launcher. The base file also serves the historical launcher.
+services:
+  mosquitto:
+    image: eclipse-mosquitto@sha256:6f8d8a947c506f8a2290ec65cd4bd2bc7cb4d43fb5f6271f861cb013e2ef9797
+  ollama:
+    image: ollama/ollama@sha256:32931b46719f673c05fdbaa81ccb26da18ea4a1c57590a754874ab28ba269eb2
+  core:
+    build:
+      context: ${JABFY_BUILD_ROOT:-..}/jabfy-core
+  jabfy-sim:
+    build:
+      context: ${JABFY_BUILD_ROOT:-..}
+    volumes:
+      - home:/app/data
+volumes:
+  home:
