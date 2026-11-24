@@ -7,7 +7,25 @@ les connexions, les volumes et les contrôles de santé.
 Documentation du composant : [docs/README.md](docs/README.md). Ces pages sont la
 source destinée à la section Composants de `jabfy-docs`, après fusion sur `main`.
 
-## V0.0.1 locale — démarrage recommandé
+## Deploy V1 — lancer la maison virtuelle
+
+Depuis ce dépôt, avec Docker Compose v2, Git et Python 3.9 ou ultérieur :
+
+```bash
+python3 scripts/deploy.py up
+python3 scripts/deploy.py model
+python3 scripts/deploy.py status
+```
+
+Ouvrir [la maison virtuelle](http://127.0.0.1:8080). La commande `model` installe
+le modèle local pour l'onglet IA. Pour arrêter les services et conserver maison,
+audit et modèle, utiliser `python3 scripts/deploy.py down`.
+
+V1 désigne ici l'orchestrateur. Il assemble les versions disponibles de Core,
+Simulation, Bus et Guard. Le périmètre applicatif reste la maison virtuelle V0.0.1.
+Voir le [guide V1 et les tests reproductibles](docs/deploy-v1.md).
+
+## V0.0.1 — lancement historique depuis les copies de travail
 
 Placer `jabfy-deploy`, `jabfy-core`, `jabfy-bus`, `jabfy-guard` et `jabfy-simulation`
 côte à côte avec les changements V0.0.1. Ouvrir Docker Desktop, puis, depuis ce dépôt :

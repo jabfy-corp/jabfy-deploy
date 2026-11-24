@@ -1,5 +1,8 @@
 # jabfy-deploy
 
+Pour démarrer la version actuelle avec des révisions Git fixées et vérifier le
+déploiement de bout en bout, suivre le [guide Deploy V1](deploy-v1.md).
+
 jabfy-deploy est le point d'entrée pour assembler, démarrer et arrêter Jabfy.
 Il définit les services Docker, leurs connexions, leur configuration et la
 persistance des données. Il ne contient ni moteur IA, ni moteur de simulation,
